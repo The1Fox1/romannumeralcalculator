@@ -6,104 +6,78 @@ export default function RomanNumeralComponent() {
   //tried hooks. didnt go well
   //const [RomanString, updateRomanStr] = useState("");
 
-  //Id noramlly keep this in state but because this is a functional component and wanted to keep it that way
+  //These should preferably be in state but because this is a functional component and figured id keep it that way
   var RomanString = "";
+  const RomanTable = {
+    Thousands: {
+      1: "M"
+    },
+    Hundreds: {
+      9: "CM",
+      5: "D",
+      4: "CD",
+      1: "C"
+    },
+    Tens: {
+      9: "XC",
+      5: "L",
+      4: "XL",
+      1: "X"
+    },
+    Ones: {
+      9: "IX",
+      5: "V",
+      4: "IV",
+      1: "I"
+    }
+  };
 
   const convertToRoman = total => {
     let sTotal = total.toString();
     let totalArr = [];
 
-    //im going to break up our total and turn it into an array based on place value
+    //Break up our total and turn it into an array based on place value
     for (let i = 0; i < sTotal.length; i++) {
       totalArr.push(sTotal.charAt(i));
     }
 
-    //each of these subsequent functions are responsible for calculating the numeral based on the place value
-    //TODO simplify and abstract
-    const calculateThouasands = num => {
-      addToRomanString(num, "M");
-    };
-    const calculateHundreds = num => {
-      switch (num) {
+    //Responsible for calculating the numeral based on the place value and the digit
+    const calculatePlaceValue = (digit, place) => {
+      switch (digit) {
         case 9:
-          addToRomanString(1, "CM");
+          addToRomanString(1, RomanTable[place][9]);
           break;
         case 8:
         case 7:
         case 6:
-          addToRomanString(1, "D");
-          addToRomanString(num - 5, "C");
-          break;
         case 5:
-          addToRomanString(1, "D");
+          addToRomanString(1, RomanTable[place][5]);
+          addToRomanString(digit - 5, RomanTable[place][1]);
           break;
         case 4:
-          addToRomanString(1, "CD");
+          addToRomanString(1, RomanTable[place][4]);
           break;
         default:
-          addToRomanString(num, "C");
-      }
-    };
-    const calculateTens = num => {
-      switch (num) {
-        case 9:
-          addToRomanString(1, "XC");
-          break;
-        case 8:
-        case 7:
-        case 6:
-          addToRomanString(1, "L");
-          addToRomanString(num - 5, "X");
-          break;
-        case 5:
-          addToRomanString(1, "L");
-          break;
-        case 4:
-          addToRomanString(1, "XL");
-          break;
-        default:
-          addToRomanString(num, "X");
-      }
-    };
-    const calculateOnes = num => {
-      switch (num) {
-        case 9:
-          addToRomanString(1, "IX");
-          break;
-        case 8:
-        case 7:
-        case 6:
-          addToRomanString(1, "V");
-          addToRomanString(num - 5, "I");
-          break;
-        case 5:
-          addToRomanString(1, "V");
-          break;
-        case 4:
-          addToRomanString(1, "IV");
-          break;
-        default:
-          addToRomanString(num, "I");
+          addToRomanString(digit, RomanTable[place][1]);
       }
     };
 
     //these will determine which plave value is evaluated and continue to the next smallest place
     //TODO simplify and abstract
     if (totalArr.length === 4) {
-      //return M x times
-      calculateThouasands(parseInt(totalArr[0]));
+      calculatePlaceValue(parseInt(totalArr[0]), "Thousands");
     }
     if (totalArr.length >= 3) {
       totalArr = totalArr.slice(-3);
-      calculateHundreds(parseInt(totalArr[0]));
+      calculatePlaceValue(parseInt(totalArr[0]), "Hundreds");
     }
     if (totalArr.length >= 2) {
       totalArr = totalArr.slice(-2);
-      calculateTens(parseInt(totalArr[0]));
+      calculatePlaceValue(parseInt(totalArr[0]), "Tens");
     }
     if (totalArr.length >= 1) {
       totalArr = totalArr.slice(-1);
-      calculateOnes(parseInt(totalArr[0]));
+      calculatePlaceValue(parseInt(totalArr[0]), "Ones");
     }
   };
 
@@ -120,9 +94,8 @@ export default function RomanNumeralComponent() {
 
     //Calculate Roman Numeral by place value
 
-    //check for non numbers
-    //if (typeof int != "number") return "Please enter numbers only";
-    //check for 0 sum
+    //checks for 0 or NaN
+    if (isNaN(sum)) return "Enter numbers only please";
     if (sum === 0) return "nulla";
 
     convertToRoman(sum);
@@ -130,7 +103,6 @@ export default function RomanNumeralComponent() {
     return RomanString;
   };
 
-  //sum of array elements
   const calculateTotal = arr => {
     let sum = null;
 
@@ -140,7 +112,8 @@ export default function RomanNumeralComponent() {
     return sum;
   };
 
-  const addNumbers = inputString => {
+  //i renamed your function since its more of a conversion than addition and i have a different function for summation
+  const mapInputStrToArray = inputString => {
     const numbersStringArray = inputString.split(",");
     const numbers = numbersStringArray.map(numberAsString => {
       return parseInt(numberAsString, 10);
@@ -158,7 +131,7 @@ export default function RomanNumeralComponent() {
 
   const handleSubmit = event => {
     event.preventDefault();
-    const answer = addNumbers(input);
+    const answer = mapInputStrToArray(input);
     updateAnswer(answer);
   };
 
